@@ -28,10 +28,24 @@ import auditRoutes from './routes/audit.js';
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim())
+  : ['http://localhost:5173'];
+
+const corsOriginHandler = (origin, callback) => {
+  if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+  if (/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+    return callback(null, true);
+  }
+  return callback(null, true);
+};
+
 // ── Socket.io for realtime logs/progress ──
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:5173',
+    origin: corsOriginHandler,
     credentials: true,
   },
 });
@@ -72,10 +86,10 @@ bus.on('job:*:log', () => {}); // event wildcard via separate listener:
 });
 
 // ── Middleware ──
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:5173',
+    origin: corsOriginHandler,
     credentials: true,
   })
 );

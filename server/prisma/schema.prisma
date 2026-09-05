@@ -1,0 +1,124 @@
+// Enterprise Automation Hub — Prisma Schema
+// Uses PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  OPERATOR
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ExecutionType {
+  PYTHON_HEADLESS
+  WINDOWS_VBS
+  HTTP_WORKER
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  username     String    @unique
+  passwordHash String
+  fullName     String
+  role         Role      @default(OPERATOR)
+  department   String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  jobs         JobRun[]
+  auditLogs    AuditLog[]
+}
+
+model AutomationModule {
+  id             String        @id @default(cuid())
+  slug           String        @unique // sap-tracker, zprs, me2m, vendor-email
+  name           String
+  description    String?
+  executionType  ExecutionType
+  scriptPath     String?       // relative path to worker script
+  allowedRoles   Role[]        // which roles can run this
+  icon           String?       // emoji or icon name
+  isEnabled      Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  jobs           JobRun[]
+  schedules      Schedule[]
+}
+
+model JobRun {
+  id             String        @id @default(uuid())
+  moduleId       String
+  module         AutomationModule @relation(fields: [moduleId], references: [id])
+  triggeredById  String?
+  triggeredBy    User?         @relation(fields: [triggeredById], references: [id])
+  status         JobStatus     @default(QUEUED)
+  params         Json?         // serialized input params
+  inputFileId    String?
+  inputFile      StoredFile?   @relation("inputFiles", fields: [inputFileId], references: [id])
+  outputFileId   String?
+  outputFile     StoredFile?   @relation("outputFiles", fields: [outputFileId], references: [id])
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  errorMessage   String?       @db.Text
+  logStream      String?       // socket.io room id
+  createdAt      DateTime      @default(now())
+}
+
+model StoredFile {
+  id             String        @id @default(uuid())
+  originalName   String
+  storedPath     String
+  mimeType       String
+  sizeBytes      Int
+  uploadedById   String?
+  createdAt      DateTime      @default(now())
+
+  inputJobs      JobRun[]      @relation("inputFiles")
+  outputJobs     JobRun[]      @relation("outputFiles")
+}
+
+model Schedule {
+  id             String        @id @default(cuid())
+  moduleId       String
+  module         AutomationModule @relation(fields: [moduleId], references: [id])
+  name           String
+  cronExpression String        // BullMQ repeat pattern
+  params         Json?
+  createdById    String?
+  isActive       Boolean       @default(true)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  createdAt      DateTime      @default(now())
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  action         String        // LOGIN, RUN_JOB, DOWNLOAD_REPORT, etc.
+  resourceType   String?       // Module, JobRun, User
+  resourceId     String?
+  metadata       Json?
+  ipAddress      String?
+  createdAt      DateTime      @default(now())
+
+  @@index([action, createdAt])
+}

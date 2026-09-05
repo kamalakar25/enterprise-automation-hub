@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Server storage & runtime artifacts
+server/storage/uploads/*
+!server/storage/uploads/.gitkeep
+server/storage/reports/*
+!server/storage/reports/.gitkeep
+server/storage/logs/*
+!server/storage/logs/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/reports/*
+!storage/reports/.gitkeep
+storage/logs/*
+!storage/logs/.gitkeep
+
+# Windows agent runtime folders
+runs/
+server/src/workers/windows-agent-sample/runs/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

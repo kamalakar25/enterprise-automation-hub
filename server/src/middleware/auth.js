@@ -16,11 +16,17 @@ export function signToken(user) {
  */
 export async function requireAuth(req, res, next) {
   try {
+    let token = null;
     const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+    if (header?.startsWith('Bearer ')) {
+      token = header.slice(7);
+    } else if (req.query?.token) {
+      token = req.query.token;
     }
-    const token = header.slice(7);
+
+    if (!token) {
+      return res.status(401).json({ error: 'Missing or invalid Authorization token' });
+    }
     const payload = jwt.verify(token, JWT_SECRET);
 
     const user = await prisma.user.findUnique({ where: { id: payload.sub } });

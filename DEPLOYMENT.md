@@ -167,7 +167,7 @@ sudo systemctl restart nginx
 The Windows Worker Agent executes SAP GUI VBScripts and Python transformation tasks on a Windows VM:
 
 1. **Install Node.js 18+ and Python 3** on the Windows machine.
-2. Copy `server/src/workers/windows-agent-sample` to `C:\AutomationHub\worker`.
+2. Copy `server/src/workers/windows-agent` to `C:\AutomationHub\worker`.
 3. In `C:\AutomationHub\worker\.env`:
    ```env
    PORT=9000

@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "worker": "node src/workers/worker.js",
-    "agent": "node src/workers/windows-agent-sample/server.js",
+    "agent": "python src/workers/windows-agent/agent.py",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js"

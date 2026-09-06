@@ -118,11 +118,11 @@ For VBScript automations (SAP Daily Tracker, ZPRS), the central server dispatche
 4. Streams every line of console output back to the central server in real time (NDJSON)
 5. Returns the updated `SAP_Daily_Input.xlsx` + `SAP_Daily_Input_RUN_REPORT.xlsx`
 
-See **`server/src/workers/windows-agent-sample/SETUP.md`** for full deployment instructions. A `start-agent.bat` launcher is included.
+See **`server/src/workers/windows-agent/SETUP.md`** for full deployment instructions. A `start-agent.bat` launcher is included.
 
 ### Deploying the Windows Agent
 
-1. Copy `server/src/workers/windows-agent-sample/` to the Windows VM (e.g. `C:\AutomationHub\agent\`)
+1. Copy `server/src/workers/windows-agent/` to the Windows VM (e.g. `C:\AutomationHub\agent\`)
 2. Place your production scripts (`SAP_Daily_Updater_v5_LO.vbs` + `update_excel_structure.py`) in a scripts folder
 3. Run `npm install`, create `.env` from `.env.example`, set `WORKER_TOKEN` + `SCRIPTS_DIR`
 4. `npm start` → agent listens on port 9000

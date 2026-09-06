@@ -23,7 +23,7 @@ async function main() {
   });
   console.log('   Admin user: admin@company.com / admin123');
 
-  // ── Demo operator ──
+  // ── Default operator user ──
   const opPass = await bcrypt.hash('operator123', 10);
   await prisma.user.upsert({
     where: { email: 'operator@company.com' },
@@ -39,12 +39,12 @@ async function main() {
   });
   console.log('   Operator user: operator@company.com / operator123');
 
-  // ── Default automation modules (from blueprint) ──
+  // ── Automation modules ──
   const modules = [
     {
       slug: 'sap-daily-tracker',
-      name: 'SAP Daily Tracker',
-      description: 'Full pipeline: SAP snapshot → reconcile → validate → VBS SAP GUI update → apply status → RUN_REPORT.xlsx. Requires PERNR + CUMMODE. Runs on the Windows SAP worker.',
+      name: 'SAP Daily Tracker (ZSCH Update)',
+      description: 'Full production pipeline: SAP snapshot → reconcile → validate → VBS SAP GUI update → apply status → RUN_REPORT.xlsx. Runs on local laptop SAP.',
       executionType: 'WINDOWS_VBS',
       allowedRoles: ['ADMIN', 'MANAGER', 'OPERATOR'],
       icon: '📊',
@@ -52,28 +52,28 @@ async function main() {
     {
       slug: 'zprs-pending-tracker',
       name: 'ZPRS Pending Tracker',
-      description: 'Track ZPRS pending items and priority status, push updates to SAP via Windows worker.',
+      description: 'Track ZPRS pending items and priority status, push updates to SAP via Windows worker (In Development).',
       executionType: 'WINDOWS_VBS',
-      allowedRoles: ['ADMIN', 'MANAGER', 'OPERATOR'],
+      allowedRoles: ['ADMIN'],
       icon: '⏳',
     },
     {
       slug: 'me2m-analyzer',
       name: 'SAP ME2M Procurement Analyzer',
-      description: '90-day horizon procurement & schedule analysis from raw ME2M CSV/XLSX export.',
+      description: '90-day horizon procurement & schedule analysis from raw ME2M CSV/XLSX export (In Development).',
       executionType: 'PYTHON_HEADLESS',
-      allowedRoles: ['ADMIN', 'MANAGER', 'OPERATOR'],
+      allowedRoles: ['ADMIN'],
       icon: '📈',
-      scriptPath: 'src/workers/scripts/python/me2m-analyzer.py',
+      scriptPath: 'src/workers/scripts/python/me2m_analyzer.py',
     },
     {
       slug: 'vendor-email',
       name: 'Bulk Vendor Email Dispatcher',
-      description: 'Automated follow-up emails to vendors via SMTP using customizable subject + body templates with placeholders.',
+      description: 'Automated follow-up emails to vendors via SMTP using customizable subject + body templates (In Development).',
       executionType: 'PYTHON_HEADLESS',
-      allowedRoles: ['ADMIN', 'MANAGER'],
+      allowedRoles: ['ADMIN'],
       icon: '📧',
-      scriptPath: 'src/workers/scripts/python/vendor-email.py',
+      scriptPath: 'src/workers/scripts/python/vendor_email.py',
     },
   ];
 

@@ -9,6 +9,13 @@ export default function JobDetail() {
   const { id } = useParams();
   const { data: job, refetch } = useQuery({ queryKey: ['job', id], queryFn: () => api.getJob(id) });
   const [logs, setLogs] = useState([]);
+  const [viewMode, setViewMode] = useState('HUMAN'); // 'HUMAN' | 'TECH'
+
+  useEffect(() => {
+    if (job?.params?.logs && Array.isArray(job.params.logs) && logs.length === 0) {
+      setLogs(job.params.logs);
+    }
+  }, [job]);
 
   useEffect(() => {
     if (!id) return;

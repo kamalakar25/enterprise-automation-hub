@@ -358,7 +358,7 @@ async function runWindowsWorker(job, slug, params, inputFile) {
     if (err.name === 'AbortError') throw new Error('Windows worker timed out');
     if (err.message === 'fetch failed' || err.code === 'ECONNREFUSED' || err.cause?.code === 'ECONNREFUSED') {
       throw new Error(
-        `Cannot connect to Windows Worker Agent at ${workerUrl}. Please make sure the Windows Worker Agent process is running (cd server/src/workers/windows-agent-sample && npm start) and reachable.`
+        `Cannot connect to Windows Worker Agent at ${workerUrl}. Please make sure the Windows Worker Agent process is running (start-agent.bat or python agent.py) and reachable.`
       );
     }
     throw err;

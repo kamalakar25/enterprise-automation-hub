@@ -74,20 +74,38 @@ export default function Dashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {modules?.map((m) => (
-            <Link
-              key={m.id}
-              to={`/modules/${m.slug}`}
-              className="card hover:border-brand-500/50 hover:bg-slate-900/60 transition group cursor-pointer"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-3xl">{m.icon || '⚙️'}</span>
-                <span className="badge bg-slate-800 text-slate-400">{m.executionType.replace('_', ' ')}</span>
-              </div>
-              <h3 className="font-semibold text-white group-hover:text-brand-400 transition">{m.name}</h3>
-              <p className="text-sm text-slate-400 mt-1 line-clamp-2">{m.description}</p>
-            </Link>
-          ))}
+          {modules?.map((m) => {
+            const isCompleted = m.slug === 'sap-daily-tracker';
+            return (
+              <Link
+                key={m.id}
+                to={`/modules/${m.slug}`}
+                className="card hover:border-brand-500/50 hover:bg-slate-900/60 transition group cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-3xl">{m.icon || '⚙️'}</span>
+                    <div className="flex flex-col items-end gap-1">
+                      {isCompleted ? (
+                        <span className="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-medium">
+                          🟢 Production
+                        </span>
+                      ) : (
+                        <span className="badge bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-medium">
+                          🚧 Dev
+                        </span>
+                      )}
+                      <span className="badge bg-slate-800 text-slate-400 text-[10px]">
+                        {m.executionType.replace('_', ' ').toLowerCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-white group-hover:text-brand-400 transition">{m.name}</h3>
+                  <p className="text-sm text-slate-400 mt-1 line-clamp-2">{m.description}</p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -102,6 +120,7 @@ export default function Dashboard() {
                 <th className="text-left px-4 py-3 font-medium">Module</th>
                 <th className="text-left px-4 py-3 font-medium">Triggered By</th>
                 <th className="text-left px-4 py-3 font-medium">Started</th>
+                <th className="text-left px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -115,17 +134,22 @@ export default function Dashboard() {
                         {j.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-white">{j.module?.name}</td>
+                    <td className="px-4 py-3 text-white font-medium">{j.module?.name}</td>
                     <td className="px-4 py-3 text-slate-400">{j.triggeredBy?.fullName || '—'}</td>
                     <td className="px-4 py-3 text-slate-400">
                       {j.startedAt ? new Date(j.startedAt).toLocaleString() : new Date(j.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/jobs/${j.id}`} className="text-brand-400 hover:text-brand-300 text-sm font-medium hover:underline">
+                        View Live →
+                      </Link>
                     </td>
                   </tr>
                 );
               })}
               {!jobs?.length && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                     No jobs yet. Run an automation to see activity here.
                   </td>
                 </tr>

@@ -7,8 +7,8 @@ import { useAuth } from '../store/auth.jsx';
 export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@company.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (user) return <Navigate to="/" replace />;
@@ -46,6 +46,7 @@ export default function Login() {
               className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@company.com"
               required
               autoFocus
             />
@@ -57,15 +58,13 @@ export default function Login() {
               className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
               required
             />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
-          <div className="text-xs text-slate-500 text-center pt-2 border-t border-slate-800">
-            Demo: <code className="text-slate-400">admin@company.com / admin123</code>
-          </div>
         </form>
       </div>
     </div>

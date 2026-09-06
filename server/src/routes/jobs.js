@@ -108,6 +108,92 @@ router.post('/run', requireAuth, upload.single('inputFile'), async (req, res) =>
   res.status(202).json({ jobId: jobRun.id, socketRoom, status: 'QUEUED' });
 });
 
+/**
+ * POST /api/jobs/record-local-run
+ * Allows local desktop agent runs to sync directly into Central Database & Audit Trail
+ */
+router.post(
+  '/record-local-run',
+  requireAuth,
+  upload.fields([
+    { name: 'inputFile', maxCount: 1 },
+    { name: 'outputFile', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { moduleSlug, status = 'COMPLETED', params: paramsJson, logs: logsJson, errorMessage, startedAt, finishedAt } = req.body;
+      const mod = await prisma.automationModule.findUnique({ where: { slug: moduleSlug } });
+      if (!mod) return res.status(404).json({ error: 'Module not found' });
+
+      let params = {};
+      try {
+        if (paramsJson) params = JSON.parse(paramsJson);
+      } catch {}
+
+      let logs = [];
+      try {
+        if (logsJson) logs = JSON.parse(logsJson);
+      } catch {}
+
+      let inputFileRecord = null;
+      if (req.files?.inputFile?.[0]) {
+        const f = req.files.inputFile[0];
+        inputFileRecord = await prisma.storedFile.create({
+          data: {
+            originalName: f.originalname,
+            storedPath: f.path,
+            mimeType: f.mimetype,
+            sizeBytes: f.size,
+            uploadedById: req.user.id,
+          },
+        });
+      }
+
+      let outputFileRecord = null;
+      if (req.files?.outputFile?.[0]) {
+        const f = req.files.outputFile[0];
+        outputFileRecord = await prisma.storedFile.create({
+          data: {
+            originalName: f.originalname,
+            storedPath: f.path,
+            mimeType: f.mimetype,
+            sizeBytes: f.size,
+            uploadedById: req.user.id,
+          },
+        });
+      }
+
+      const jobRun = await prisma.jobRun.create({
+        data: {
+          moduleId: mod.id,
+          triggeredById: req.user.id,
+          params: { ...params, logs, executionTarget: 'LOCAL_DESKTOP_AGENT' },
+          status: status === 'FAILED' ? 'FAILED' : 'COMPLETED',
+          errorMessage: errorMessage || null,
+          inputFileId: inputFileRecord?.id || null,
+          outputFileId: outputFileRecord?.id || null,
+          startedAt: startedAt ? new Date(startedAt) : new Date(),
+          finishedAt: finishedAt ? new Date(finishedAt) : new Date(),
+        },
+      });
+
+      await audit({
+        req,
+        action: 'LOCAL_DESKTOP_JOB_RUN',
+        resourceType: 'JobRun',
+        resourceId: jobRun.id,
+        metadata: { moduleSlug, status },
+      });
+
+      logger.info(`Recorded local desktop job ${jobRun.id} for ${moduleSlug} by ${req.user.email}`);
+      res.json({ ok: true, job: jobRun });
+    } catch (err) {
+      logger.error(`Error recording local run: ${err.message}`);
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 /** List recent jobs (admin sees all; users see their own) */
 router.get('/', requireAuth, async (req, res) => {
   const where = req.user.role === 'ADMIN' ? {} : { triggeredById: req.user.id };
